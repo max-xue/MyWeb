@@ -3,6 +3,8 @@ title: 使用Hexo搭建网站个人总结
 date: 2019-10-11 11:58:48
 categories:
 tags:
+- hexo
+- guide
 ---
 
 ## 使用Hexo搭建网站个人总结
