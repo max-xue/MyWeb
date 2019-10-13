@@ -1,0 +1,152 @@
+---
+title: Unity3D Shader学习之十三—内置函数和变量
+categories:
+  - U3D
+url: 534.html
+id: 534
+date: 2017-01-04 15:09:28
+tags:
+---
+
+Unity 中Shader函数
+
+*   uint CreateShader(enum type) 创建空的shader object，type: VERTEX_SHADER,
+*   void ShaderSource(uint shader, sizeicount, const \*\*string, const int \*length) 加载shader源码进shader object；可能多个字符串
+*   void CompileShader(uint shader) 编译shader object，shader object有状态 表示编译结果
+*   void DeleteShader( uint shader ) 删除 shader object;
+*   void ShaderBinary( sizei count, const uint \*shaders, enum binaryformat,const void \*binary, sizei length ) 加载预编译过的shader 二进制串；
+*   uint CreateProgram( void ) 创建空的program object,programe object组织多个shader object，成为                   executable;
+*   void AttachShader( uint program, uint shader ) 关联shader object和program object；
+*   void DetachShader( uint program, uint shader ) 解除关联；
+*   void LinkProgram( uint program ) program object准备执行，其关联的shader object必须编译正确且符合限制条件；
+*   void UseProgram( uint program ) 执行program object；
+*   void ProgramParameteri( uint program, enum pname, int value ) 设置program object的参数；
+*   void DeleteProgram( uint program ) 删除program object； 
+    
+    ###### **shader 常用变量:**
+    
+*   qualifier:默认无修饰符，普通变量读写， 与外界无连接；
+*   const:常量 const vec3 zAxis = vec3(0.0, 0.0, 1.0);
+*    attribute:申明传给vertex shader的变量;只读;不能为array或struct; attribute vec4 position;
+*   uniform: 表明整个图元处理中值相同；只读； uniform vec4 lightPos;
+*   varying:被差值；读写； varying vec3 normal;
+*   in, out, inout; 
+    
+    ###### shader变量的精度： 
+    
+    highp, mediump, lowp
+    
+    ###### shader内置变量：
+    
+*   gl\_Position: 用于vertex shader, 写顶点位置；被图元收集、裁剪等固定操作功能所使用;其内部声明是： highp vec4 gl\_Position;
+*   gl\_PointSize: 用于vertex shader, 写光栅化后的点大小，像素个数;其内部声明是：mediump float gl\_Position;
+*   gl\_FragColor: 用于Fragment shader，写fragment color；被后续的固定管线使用； mediump vec4 gl\_FragColor;
+*    gl\_FragData: 用于Fragment shader，是个数组，写gl\_FragData\[n\] 为data n；被后续的固定管线使用； mediump vec4 gl\_FragData\[gl\_MaxDrawBuffers\]; gl\_FragColor和gl\_FragData是互斥的，不会同时写入；
+*    gl\_FragCoord: 用于Fragment shader,只读， Fragment相对于窗口的坐标位置 x,y,z,1/w; 这个是固定管线图元差值后产生的；z 是深度值; mediump vec4 gl\_FragCoord;
+*    gl\_FrontFacing: 用于判断 fragment是否属于 front-facing primitive；只读； bool gl\_FrontFacing;  
+*   gl\_PointCoord: 仅用于 point primitive; mediump vec2 gl\_PointCoord; 
+    
+    ###### shader内置常量： 
+    
+*   const mediump int gl_MaxVertexAttribs = 8;
+*    const mediump int gl_MaxVertexUniformVectors = 128;  
+*    const mediump int gl_MaxVaryingVectors = 8;  
+*    const mediump int gl_MaxVertexTextureImageUnits = 0;  
+*    const mediump int gl_MaxCombinedTextureImageUnits = 8;  
+*    const mediump int gl_MaxTextureImageUnits = 8;  
+*    const mediump int gl_MaxFragmentUnitformVectors = 16;  
+*    const mediump int gl_MaxDrawBuffers = 1; 
+    
+    ###### shader内置函数（一般默认都用弧度）
+    
+*    radians(degree) : 角度变弧度；
+*    degrees(radian) : 弧度变角度；
+*    sin(angle), cos(angle), tan(angle)
+*    asin(x): arc sine, 返回弧度 \[-PI/2, PI/2\];
+*    acos(x): arc cosine,返回弧度 \[0, PI\];
+*    atan(y, x): arc tangent, 返回弧度 \[-PI, PI\];
+*    atan(y/x): arc tangent, 返回弧度 \[-PI/2, PI/2\];
+*    pow(x, y): x的y次方；
+*    exp(x): 指数
+*   log(x)：返回以e为底的对数。
+*   exp2(x): 2的x次方
+*   log2(x):返回以2为底的对数。
+*   log10：返回以10为底的对数。
+*    sqrt(x): x的根号；
+*   inversesqrt(x): x根号的倒数
+*    abs(x): 绝对值
+*    sign(x): 符号, 1, 0 或 -1  {sign(x)或者Sign(x)叫做符号函数，在数学和计算机运算中，其功能是取某个数的符号(正或负):  当x>0，sign(x)=1;     当x=0，sign(x)=0;     当x<0， sign(x)=-1;}  
+*   floor(x): 底部取整
+*    ceil(x): 顶部取整
+*    fract(x): 取小数部分
+*    mod(x, y): 取模， x - y*floor(x/y)
+*   fmode(x,y):返回x/y的余数，符号同x。如果y为0，结果不可预料。
+*    min(x, y): 取最小值
+*    max(x, y): 取最大值
+*    clamp(x, min, max):  min(max(x, min), max);
+*    mix(x, y, a): x, y的线性混叠， x(1-a) + y*a;
+*    step(edge, x):  Returns (x >= edge) ? 1 : 0
+*    smoothstep(edge0, edge1, x): threshod  smooth transition时使用。 edge0<=edge0时为0.0， x>=edge1时为1.0
+*    length(x): 向量长度
+*    distance(p0, p1): 两点距离， length(p0-p1);
+*   dot(x, y): 点积，各分量分别相乘 后 相加
+*    cross(x, y): 差积，x\[1\]\*y\[2\]-y\[1\]\*x\[2\], x\[2\]\*y\[0\] - y\[2\]\*x\[0\], x\[0\]\*y\[1\] - y\[0\]\*x\[1\]
+*    normalize(x): 归一化， length(x)=1;
+*    faceforward(N, I, Nref): 如 dot(Nref, I)< 0则N, 否则 -N
+*    reflect(I, N): I的反射方向， I -2\*dot(N, I)\*N, N必须先归一化
+*    refract(I, N, eta): 折射，k=1.0-eta\*eta\*(1.0 - dot(N, I) * dot(N, I)); 如k<0.0 则0.0，否则 eta\*I - (eta\*dot(N, I)+sqrt(k))*N
+*   matrixCompMult(matX, matY):矩阵相乘, 每个分量 自行相乘， 即 r_\[j\] = x\[j\]*y\[j\];__ 矩阵线性相乘，直接用 *_
+*    lessThan(vecX, vecY): 向量 每个分量比较 x < y
+*   lessThanEqual(vecX, vecY): 向量 每个分量比较 x<=y
+*   greaterThan(vecX, vecY): 向量 每个分量比较 x>y
+*   greaterThanEqual(vecX, vecY): 向量 每个分量比较 x>=y
+*   equal(vecX, vecY): 向量 每个分量比较 x==y
+*   notEqual(vecX, vexY): 向量 每个分量比较 x!=y
+*   any(bvecX): 只要有一个分量是true， 则true
+*   all(bvecX): 所有分量是true， 则true
+*   not(bvecX): 所有分量取反
+*   saturate(x) ：Clamps x to the range \[0, 1\],如果x是矢量，则对每个分量截取
+*   texture2D(sampler2D, coord): texture lookup
+*   texture2D(sampler2D, coord, bias): LOD bias, mip-mapped texture
+*   texture2DProj(sampler2D, coord):
+*   texture2DProj(sampler2D, coord, bias):
+*   texture2DLod(sampler2D, coord, lod):
+*   texture2DProjLod(sampler2D, coord, lod):
+*   textureCube(samplerCube, coord):
+*   textureCube(samplerCube, coord, bias):
+*   textureCubeLod(samplerCube, coord, lod):
+
+###### Unity常用的包含文件:
+
+*   UnityCG.cginc:包含最常用的帮助函数，宏和结构体；
+*   UnityShaderVariables.cginc:包含内置的全局变量，自动包含；
+*   Lighting.cginc:包含各种内置的光照模型，如果是表面着色器会自动包含；
+*   HLSLSupport.cginc:声明用于跨平台编译的宏和定义，自动包含；
+
+###### UnityCG.cginc 中常用的结构体
+
+*   appdeat_base:顶点着色器的输入，包含顶点位置，顶点法线，第一组纹理坐标
+*   appdata_tan:顶点着色器的输入，包含顶点位置，顶点切线，顶点法线，第一组纹理坐标；
+*   appdata_full:顶点着色器的输入，包含顶点位置，顶点切线，顶点法线，四个纹理坐标；
+*   appdata_img:顶点着色器的输入，包含顶点位置，第一组纹理坐标；
+*   v2f_img:顶点着色器的输出，裁剪空间的位置，纹理坐标；
+
+###### UnityCG.cginc常用的帮助函数
+
+*    float3 WorldSpaceViewDir(float4 v):输入一个模型空间中的顶点位置，返回世界空间中从该点到摄像机的观察方向；
+*   float3 UnityWorldSpaceViewDir(float4 v):输入一个世界空间中的顶点位置，返回世界空间中从从该点到摄像机的观察方向
+*   float3 ObjSpaceLightDir(float4 v):输入一个模型空间中的顶点位置，返回模型空间中从该点到摄像机的观察位置；
+*   float3 ObjSpaceViewDir(float4 v):输入一个模型空间中的顶点位置，返回模型空间中从该点到摄像机的观察方向
+*   float3 WorldSpaceLightDir(float4 v):仅用于前向渲染。输入一个模型空间中的顶点位置，返回世界空间中从该点到光源的光照方向。没有被归一化;
+*   float3 ObjSpaceLightDir(float4 v):仅可用于前向渲染中。输入一个模型空间中的顶点位置，返回模型空间中从该点到光源的光照方向。没有被归一化；
+*   float3 UnityObjectToWorldNormal(float3 normal):把法线方向从模型空间转换到世界空间中；
+*   float3 UnityObjectToWorldDir(float3 dir):把方向矢量从模型空间变换到世界空间中；
+*   float3 UnityWorldToObjectDir(float3 dir):把方向矢量从世界空间变换到模型空间中；
+
+其他
+
+*   TANGENT\_SPACE\_ROTATION:计算模型到切线的矩阵
+*   UnpackNormal：获取切线坐标下的法线
+*   UNITY\_LIGHTMODEL\_AMBIENT:环境光
+
+\_MainTex\_TexelSize _{TextureName}_`_TexelSize` \- a float4 property contains texture size information: `x` contains 1.0/width `y` contains 1.0/height `z` contains width `w` contains height 部分转自：[http://blog.sina.com.cn/s/blog_49b531af0102wcm7.html](http://blog.sina.com.cn/s/blog_49b531af0102wcm7.html)

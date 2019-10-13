@@ -1,0 +1,75 @@
+---
+title: Unity3D Shader学习之七—坐标空间与三维转换
+categories:
+  - U3D
+url: 332.html
+id: 332
+date: 2016-11-01 12:00:10
+tags:
+---
+
+使用顶点和片段程序时，程序将关闭图形硬件中的大部分硬编码功能（“固定功能管道”）。如完全关闭标准三维转换、照明和纹理坐标生成功能。
+
+因此，在开发顶点和片段着色器时，需要对坐标空间、三维转换和光照有全面了解。下面将分别介绍。
+
+Unity 内置的一些有用的着色器变量，它们在UnityShaderVariables.cginc声明，着色器自动包含这个文件。
+
+内置Shader系统 文件：windows:Unity\\Editor\\Data\\CGIncludes
+
+空间转换的内置变量，这些变量都是float4x4的矩阵：
+
+  
+
+**Name**
+
+**Value**
+
+UNITY\_MATRIX\_MVP
+
+Current model * view * projection matrix.  当前的模型观察投影矩阵，用于将顶点/方向矢量模型空间变换到裁剪空间
+
+UNITY\_MATRIX\_MV
+
+Current model * view matrix.当前的模型观察矩阵,用于将顶点/矢量模型空间变换到观察空间
+
+UNITY\_MATRIX\_V
+
+Current view matrix.当前的观察矩阵，用于将顶点/方向矢量从世界坐标变换到观察空间
+
+UNITY\_MATRIX\_P
+
+Current projection matrix.当前的投影矩阵，用于将顶点/方向矢量从观察空间变换到裁剪空间
+
+UNITY\_MATRIX\_VP
+
+Current view * projection matrix.当前的观察投影矩阵，用于将顶点/方向矢量从世界空间变换到裁剪空间
+
+UNITY\_MATRIX\_T_MV
+
+Transpose of model * view matrix.模型观察矩阵的转转置
+
+UNITY\_MATRIX\_IT_MV
+
+Inverse transpose of model * view matrix.模型观察矩阵的逆转置矩阵，用于将法线从模型空间变换到观察空间，也可用于得到UNITY\_MATRIC\_MV的转置矩阵
+
+_Object2World
+
+Current model matrix.当前的模型矩阵，用于将顶点/方向矢量从模型空间变换到世界空间
+
+_World2Object
+
+Inverse of current world matrix.模型空间的逆矩阵，用于将顶点/方向矢量从世界空间变换到模型空间
+
+ 
+
+从上面的表格中我们可以知道在Unity（图形渲染）中含有，模型空间（局部空间）>>世界空间>>观察空间（摄像机空间）>>裁剪空间（齐次裁剪空间）>>屏幕空间。模型上的顶点依次通过这些空间的变换最终展示到显示屏幕上。
+
+*   坐标系
+
+为了表示位置，距离，方向等相关关系，使用三维的笛卡尔坐标系。 ![9f25-tmp](http://www.le-more.com/wp-content/uploads/2016/11/9F25.tmp_.png) 左手右手坐标系，鉴别方法拇指食指中指分别代表xyz，指头方向为正方向。如果左手和当前坐标轴对应就是左手坐标系，反之为右手坐标系。上图为左手坐标系。
+
+*   空间变换
+
+世界空间》模型空间 脚本：transform.worldToLocalMatrix的MultiplyPoint()和MultiplyVector() Shader: 左乘\_World2Object 模型空间》世界空间 脚本：Transform的localToWorldMatrix的MulitplayPoint()和MultiplyVector() Shader:\_Object2World 世界空间》摄相机空间 脚本：Camera组件的worldToCameraMatrix Shader:UNITY\_MATRIX\_MV 直接从模型空间转到摄相机空间 摄相机空间》世界空间 脚本：Camera组件的cameraToWorldMatrix Shader:UNITY\_MATRIX\_T\_MV 直接从摄相机空间转到模型空间（UNITY\_MATRIX\_MV是正交矩阵） 世界空间》裁剪空间 Shader:UNITY\_MATRIX_VP用于将顶点/矢量从世界空间变换到裁剪空间 裁剪空间》屏幕空间 Shader:ComputeScreenPos裁剪空间坐标转换为屏幕空间坐标 屏幕空间》视口空间 Shader:屏幕空间坐标Pos.xy / Pos.w得到视口空间中的坐标,视口坐标范围\[(0,0),(1,1)\] ![8fb7-tmp](http://www.le-more.com/wp-content/uploads/2016/11/8FB7.tmp_.png)
+
+**注意：关于坐标空间，矢量运算，矩阵变换等，请查看相关资料。不再赘述！（Unity Shader入门精要第4章介绍的很清楚，有PDF版本，入门建议阅读）**
