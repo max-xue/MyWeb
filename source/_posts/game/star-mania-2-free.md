@@ -1,7 +1,7 @@
 ---
 title: Star Mania
 categories:
-  - 其他
+  - Other
 url: 116.html
 id: 116
 date: 2016-09-05 22:36:12

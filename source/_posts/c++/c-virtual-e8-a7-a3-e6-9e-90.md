@@ -1,7 +1,7 @@
 ---
 title: C++研究之---virtual 解析
 categories:
-  - C++
+  - C
 date: 2018-08-22 10:50:22
 comments: true
 tags:
