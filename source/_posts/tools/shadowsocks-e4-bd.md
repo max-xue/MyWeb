@@ -2,8 +2,7 @@
 title: Shadowsocks 使用总结
 categories:
   - Tools
-url: 1247.html
-id: 1247
+top: 16
 comments: true
 date: 2018-05-08 11:01:41
 tags:
@@ -16,3 +15,5 @@ tags:
 5.  下载安装SwitchyOmega Chrome插件,添加情景shadow_sockets 代理协议SOCKET5 代理服务器：127.0.0.1 代理端口：1080 ![](http://www.le-more.com/wp-content/uploads/2018/05/vps_shadowsocks_SwitchyOmega.png)
 6.  在chrome浏览器右上角选择SwitchyOmega的场景shadow_sockets，开始新世界的旅程吧！
 7.  iOS手机下载Shadowrocket,如果不想花钱就下载PP助手
+
+脚本地址被墙，可以试试这个[Shadowsocks-go一键安装脚本 ](http://www.hopol.cn/2015/05/239/) 
