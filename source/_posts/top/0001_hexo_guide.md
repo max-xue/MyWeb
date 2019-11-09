@@ -26,7 +26,7 @@ tags:
     $ hexo init MyWeb
     $ cd MyWeb
     $ npm install
-
+ 
 
 执行后目录如下：
 
@@ -39,8 +39,26 @@ tags:
     |   └── _posts
     └── themes
 
+安装其他依赖(根据需要) 
+
+    $ npm install hexo-wordcount --save
+    $ npm install hexo-generator-archive --save
+    $ npm install hexo-generator-category --save
+    $ npm install hexo-generator-feed --save
+    $ npm install hexo-generator-index --save
+    $ npm install hexo-generator-json-content --save
+    $ npm install hexo-generator-search --save
+    $ npm install hexo-generator-sitemap --save
+    $ npm install hexo-generator-tag --save
+    $ npm install hexo-generator-topindex --save
+    $ npm install hexo-renderer-ejs --save
+    $ npm install hexo-renderer-marked --save
+    $ npm install hexo-renderer-stylus --save
+    $ npm install hexo-server --save
+    $ npm install hexo-wordcount --save
 
 4.[复制主题](https://github.com/yelog/hexo-theme-3-hexo)
+
 以我使用的3-Hexo为例
 
 
@@ -68,8 +86,7 @@ tags:
 7.生成预览
  
  
-     $hexo g
-     $hexo s
+     $hexo clean && hexo g && hexo s
  
 
 打开http://localhost:4000可预览效果
@@ -90,4 +107,4 @@ tags:
 
 执行
 
-    $hexo d
+    $hexo clean && hexo g && hexo d

@@ -11,7 +11,7 @@ tags:
 1.VPS服务器购买： [VIRMACH 官网](https://billing.virmach.com/cart.php?gid=1)
 （我选择最便宜的一款，支付宝支付，服务器需要人工审核，大概几个小时通过） ![](http://www.le-more.com/wp-content/uploads/2018/05/vps_VRMACH.png)
 
-2.重新安装系统：Ubuntu 12.04 x86  
+2.重新安装系统：Ubuntu 12.04 x86
 
 3.装配置服务端：[Shadowsocks-go一键安装脚本 ](https://teddysun.com/392.html) ![](http://www.le-more.com/wp-content/uploads/2018/05/vps_shadowsocks_server.png)
 
