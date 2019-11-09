@@ -9,37 +9,37 @@ tags:
 ---
 
 在上一篇介绍在cocos中如果使用自定义shader，通过OpenGL ES绘制一个三角形，下面来对其实现进行分析一下。 初始化部分加载一个顶点着色器和一个片段着色器，下面对两个着色器做一个简单的注解： 顶点着色程序：
-
-//输入变量，顶点位置
-attribute vec4 a_position;
-//输入变量，顶点颜色
-attribute vec4 a_color;
-
-//输出变量片段颜色
-varying vec4 v_fragmentColor;
-
-void main()
-{
- //顶点位置通过模型、视图、投影矩阵点乘顶点坐标转化为裁剪空间位置
- //CC_MVPMatrix 是cocos提供的实现（待确定）
- gl\_Position = CC\_MVPMatrix * a_position;
- v\_fragmentColor = a\_color;
-}
-
-片段着色器
-
-//输入变量
-varying vec4 v_fragmentColor;
- 
-void main()
-{
-    //给内置片段着色变量赋值
-    gl\_FragColor = v\_fragmentColor;
-}
+    
+    //输入变量，顶点位置
+    attribute vec4 a_position;
+    //输入变量，顶点颜色
+    attribute vec4 a_color;
+    
+    //输出变量片段颜色
+    varying vec4 v_fragmentColor;
+    
+    void main()
+    {
+     //顶点位置通过模型、视图、投影矩阵点乘顶点坐标转化为裁剪空间位置
+     //CC_MVPMatrix 是cocos提供的实现（待确定）
+     gl\_Position = CC\_MVPMatrix * a_position;
+     v\_fragmentColor = a\_color;
+    }
+    
+    片段着色器
+    
+    //输入变量
+    varying vec4 v_fragmentColor;
+     
+    void main()
+    {
+        //给内置片段着色变量赋值
+        gl\_FragColor = v\_fragmentColor;
+    }
 
 当前cocos版本（3.13）使用的OpenGL ES版本是2.0，和最新的3.0规范不同。在着色器程序的开头一般有版本的声明：
 
-#version 300 es
+    #version 300 es
 
 如果开头没有版本声明，默认是OpenGL ES 2.0的着色器程序，但要注意声明的版本号不是200，因为OpenGL ES 2.0区别与1.0，1.1是第一个可编程的API，它的着色器版本是1.0。 着色器程序中的变量限定符转自一篇博文说的很清楚：[原文地址](http://blog.csdn.net/renai2008/article/details/7844495)
 
@@ -54,9 +54,9 @@ void main()
  （4）gl\_Position为内建变量，表示变换后点的空间位置。顶点着色器从应用程序中获得原始的顶点位置数据，这些原始的顶点数据在顶点着色器中经过平移、旋转、缩放等数学变换后，生成新的顶点位置。新的顶点位置通过在顶点着色器中写入gl\_Position传递到渲染管线的后继阶段继续处理。
 
 参考下面两张图来理解上面的定义： ![](http://www.le-more.com/wp-content/uploads/2016/12/vetex_shader.png)![](http://www.le-more.com/wp-content/uploads/2016/12/fragment_shader.png) 两个着色器程序很简单，但在OpenGL ES中必须至少包含一个顶点着色器程序和一个片段程序，否则不会出现任何图形。 初始化着色器:
-
-auto glProgram = GLProgram::createWithByteArrays(vShaderStr, fShaderStr);
-auto state = GLProgramState::getOrCreateWithGLProgram(glProgram);
-setGLProgramState(state);
+    
+    auto glProgram = GLProgram::createWithByteArrays(vShaderStr, fShaderStr);
+    auto state = GLProgramState::getOrCreateWithGLProgram(glProgram);
+    setGLProgramState(state);
 
 cocos通过上面代码加载，编译着色器程序，欲了解cocos对OpenGL ES封装，下一篇再介绍。 示例程序开源托管在Github: [CocosShader](https://github.com/max-xue/CocosShader)

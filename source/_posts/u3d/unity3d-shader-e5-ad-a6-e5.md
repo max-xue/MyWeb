@@ -55,214 +55,214 @@ tags:
 *   Anisotropic filtering 各项异性过滤 当从掠角（grazing angle）观看，各向异性过滤提高纹理质量，有一些渲染成本消耗（完全是显卡成本）。为地面和地板纹理，增加各向异性等级通常是一个好主意。在质量设置中各向异性过滤，可以强制用于所有纹理或完全禁用。**纹理应用于Shader**
 *   单张纹理 单张纹理应用
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	o.worldNormal = UnityObjectToWorldNormal(v.normal);
-    				
-    	o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-    				
-    	o.uv = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
-    	// Or just call the built-in function
-    //o.uv = TRANSFORM\_TEX(v.texcoord, \_MainTex);
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	fixed3 worldNormal = normalize(i.worldNormal);
-    	fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
-    				
-    	// Use the texture to sample the diffuse color
-    	fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
-    				
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
-    				
-    	fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(worldNormal, worldLightDir));
-    				
-    	fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
-    	fixed3 halfDir = normalize(worldLightDir + viewDir);
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
-    				
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                        
+            o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                        
+            o.uv = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
+            // Or just call the built-in function
+        //o.uv = TRANSFORM\_TEX(v.texcoord, \_MainTex);
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            fixed3 worldNormal = normalize(i.worldNormal);
+            fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                        
+            // Use the texture to sample the diffuse color
+            fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
+                        
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
+                        
+            fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(worldNormal, worldLightDir));
+                        
+            fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
+            fixed3 halfDir = normalize(worldLightDir + viewDir);
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
+                        
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
 
 *   高度纹理 用高度图实现凹凸映射，存在的是强度值。颜色浅越凸，深则凹。
 *   法线纹理 模型下的法线纹理：直观、实现简单；边界平滑； 切线空间下的法线纹理：顶点是原点，x轴是切线方向t，y轴是副切线方向b,z轴是法线方向n；自由度高；可实现uv动画；法线纹理可重用；可压缩。 切线空间下计算：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
-    	o.uv.zw = v.texcoord.xy * \_BumpMap\_ST.xy + \_BumpMap\_ST.zw;
-    				
-    	// Compute the binormal
-    //				float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) ) * v.tangent.w;
-    //				// Construct a matrix which transform vectors from object space to tangent space
-    //				float3x3 rotation = float3x3(v.tangent.xyz, binormal, v.normal);
-    	// Or just use the built-in macro
-    	TANGENT\_SPACE\_ROTATION;
-    				
-    	// Transform the light direction from object space to tangent space
-    	o.lightDir = mul(rotation, ObjSpaceLightDir(v.vertex)).xyz;
-    	// Transform the view direction from object space to tangent space
-    	o.viewDir = mul(rotation, ObjSpaceViewDir(v.vertex)).xyz;
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {				
-    	fixed3 tangentLightDir = normalize(i.lightDir);
-    	fixed3 tangentViewDir = normalize(i.viewDir);
-    				
-    	// Get the texel in the normal map
-    	fixed4 packedNormal = tex2D(_BumpMap, i.uv.zw);
-    	fixed3 tangentNormal;
-    	// If the texture is not marked as "Normal map"
-    //				tangentNormal.xy = (packedNormal.xy * 2 - 1) * _BumpScale;
-    //				tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
-    				
-    	// Or mark the texture as "Normal map", and use the built-in funciton
-    	tangentNormal = UnpackNormal(packedNormal);
-    	tangentNormal.xy *= _BumpScale;
-    	tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
-    				
-    	fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
-    				
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
-    				
-    	fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(tangentNormal, tangentLightDir));
-    
-    	fixed3 halfDir = normalize(tangentLightDir + tangentViewDir);
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(tangentNormal, halfDir)), _Gloss);
-    				
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
+            o.uv.zw = v.texcoord.xy * \_BumpMap\_ST.xy + \_BumpMap\_ST.zw;
+                        
+            // Compute the binormal
+        //				float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) ) * v.tangent.w;
+        //				// Construct a matrix which transform vectors from object space to tangent space
+        //				float3x3 rotation = float3x3(v.tangent.xyz, binormal, v.normal);
+            // Or just use the built-in macro
+            TANGENT\_SPACE\_ROTATION;
+                        
+            // Transform the light direction from object space to tangent space
+            o.lightDir = mul(rotation, ObjSpaceLightDir(v.vertex)).xyz;
+            // Transform the view direction from object space to tangent space
+            o.viewDir = mul(rotation, ObjSpaceViewDir(v.vertex)).xyz;
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {				
+            fixed3 tangentLightDir = normalize(i.lightDir);
+            fixed3 tangentViewDir = normalize(i.viewDir);
+                        
+            // Get the texel in the normal map
+            fixed4 packedNormal = tex2D(_BumpMap, i.uv.zw);
+            fixed3 tangentNormal;
+            // If the texture is not marked as "Normal map"
+        //				tangentNormal.xy = (packedNormal.xy * 2 - 1) * _BumpScale;
+        //				tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
+                        
+            // Or mark the texture as "Normal map", and use the built-in funciton
+            tangentNormal = UnpackNormal(packedNormal);
+            tangentNormal.xy *= _BumpScale;
+            tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
+                        
+            fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
+                        
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
+                        
+            fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(tangentNormal, tangentLightDir));
+        
+            fixed3 halfDir = normalize(tangentLightDir + tangentViewDir);
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(tangentNormal, halfDir)), _Gloss);
+                        
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
     世界空间下计算：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
-    	o.uv.zw = v.texcoord.xy * \_BumpMap\_ST.xy + \_BumpMap\_ST.zw;
-    				
-    	float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;  
-    	fixed3 worldNormal = UnityObjectToWorldNormal(v.normal);  
-    	fixed3 worldTangent = UnityObjectToWorldDir(v.tangent.xyz);  
-    	fixed3 worldBinormal = cross(worldNormal, worldTangent) * v.tangent.w; 
-    				
-    	// Compute the matrix that transform directions from tangent space to world space
-    	// Put the world position in w component for optimization
-    	o.TtoW0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);
-    	o.TtoW1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);
-    	o.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	// Get the position in world space		
-    	float3 worldPos = float3(i.TtoW0.w, i.TtoW1.w, i.TtoW2.w);
-    	// Compute the light and view dir in world space
-    	fixed3 lightDir = normalize(UnityWorldSpaceLightDir(worldPos));
-    	fixed3 viewDir = normalize(UnityWorldSpaceViewDir(worldPos));
-    				
-    	// Get the normal in tangent space
-    	fixed3 bump = UnpackNormal(tex2D(_BumpMap, i.uv.zw));
-    	bump.xy *= _BumpScale;
-    	bump.z = sqrt(1.0 - saturate(dot(bump.xy, bump.xy)));
-    	// Transform the narmal from tangent space to world space
-    	bump = normalize(half3(dot(i.TtoW0.xyz, bump), dot(i.TtoW1.xyz, bump), dot(i.TtoW2.xyz, bump)));
-    				
-    	fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
-    				
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
-    				
-    	fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(bump, lightDir));
-    
-    	fixed3 halfDir = normalize(lightDir + viewDir);
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(bump, halfDir)), _Gloss);
-    				
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
+            o.uv.zw = v.texcoord.xy * \_BumpMap\_ST.xy + \_BumpMap\_ST.zw;
+                        
+            float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;  
+            fixed3 worldNormal = UnityObjectToWorldNormal(v.normal);  
+            fixed3 worldTangent = UnityObjectToWorldDir(v.tangent.xyz);  
+            fixed3 worldBinormal = cross(worldNormal, worldTangent) * v.tangent.w; 
+                        
+            // Compute the matrix that transform directions from tangent space to world space
+            // Put the world position in w component for optimization
+            o.TtoW0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);
+            o.TtoW1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);
+            o.TtoW2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            // Get the position in world space		
+            float3 worldPos = float3(i.TtoW0.w, i.TtoW1.w, i.TtoW2.w);
+            // Compute the light and view dir in world space
+            fixed3 lightDir = normalize(UnityWorldSpaceLightDir(worldPos));
+            fixed3 viewDir = normalize(UnityWorldSpaceViewDir(worldPos));
+                        
+            // Get the normal in tangent space
+            fixed3 bump = UnpackNormal(tex2D(_BumpMap, i.uv.zw));
+            bump.xy *= _BumpScale;
+            bump.z = sqrt(1.0 - saturate(dot(bump.xy, bump.xy)));
+            // Transform the narmal from tangent space to world space
+            bump = normalize(half3(dot(i.TtoW0.xyz, bump), dot(i.TtoW1.xyz, bump), dot(i.TtoW2.xyz, bump)));
+                        
+            fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
+                        
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
+                        
+            fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(bump, lightDir));
+        
+            fixed3 halfDir = normalize(lightDir + viewDir);
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(bump, halfDir)), _Gloss);
+                        
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
 
 *   渐变纹理 实践：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	o.worldNormal = UnityObjectToWorldNormal(v.normal);
-    				
-    	o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-    				
-    	o.uv = TRANSFORM\_TEX(v.texcoord, \_RampTex);
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	fixed3 worldNormal = normalize(i.worldNormal);
-    	fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
-    				
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	// Use the texture to sample the diffuse color
-    	fixed halfLambert  = 0.5 * dot(worldNormal, worldLightDir) + 0.5;
-    	fixed3 diffuseColor = tex2D(\_RampTex, fixed2(halfLambert, halfLambert)).rgb * \_Color.rgb;
-    				
-    	fixed3 diffuse = _LightColor0.rgb * diffuseColor;
-    				
-    	fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
-    	fixed3 halfDir = normalize(worldLightDir + viewDir);
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
-    				
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                        
+            o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                        
+            o.uv = TRANSFORM\_TEX(v.texcoord, \_RampTex);
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            fixed3 worldNormal = normalize(i.worldNormal);
+            fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                        
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            // Use the texture to sample the diffuse color
+            fixed halfLambert  = 0.5 * dot(worldNormal, worldLightDir) + 0.5;
+            fixed3 diffuseColor = tex2D(\_RampTex, fixed2(halfLambert, halfLambert)).rgb * \_Color.rgb;
+                        
+            fixed3 diffuse = _LightColor0.rgb * diffuseColor;
+                        
+            fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
+            fixed3 halfDir = normalize(worldLightDir + viewDir);
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
+                        
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
 *   遮罩纹理 实践：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
-    				
-    	TANGENT\_SPACE\_ROTATION;
-    	o.lightDir = mul(rotation, ObjSpaceLightDir(v.vertex)).xyz;
-    	o.viewDir = mul(rotation, ObjSpaceViewDir(v.vertex)).xyz;
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	fixed3 tangentLightDir = normalize(i.lightDir);
-    	fixed3 tangentViewDir = normalize(i.viewDir);
-    
-    	fixed3 tangentNormal = UnpackNormal(tex2D(_BumpMap, i.uv));
-    	tangentNormal.xy *= _BumpScale;
-    	tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
-    
-    	fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
-    				
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
-    				
-    	fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(tangentNormal, tangentLightDir));
-    				
-    	fixed3 halfDir = normalize(tangentLightDir + tangentViewDir);
-    	// Get the mask value
-    	fixed specularMask = tex2D(\_SpecularMask, i.uv).r * \_SpecularScale;
-    	// Compute specular term with the specular mask
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(tangentNormal, halfDir)), _Gloss) * specularMask;
-    			
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            o.uv.xy = v.texcoord.xy * \_MainTex\_ST.xy + \_MainTex\_ST.zw;
+                        
+            TANGENT\_SPACE\_ROTATION;
+            o.lightDir = mul(rotation, ObjSpaceLightDir(v.vertex)).xyz;
+            o.viewDir = mul(rotation, ObjSpaceViewDir(v.vertex)).xyz;
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            fixed3 tangentLightDir = normalize(i.lightDir);
+            fixed3 tangentViewDir = normalize(i.viewDir);
+        
+            fixed3 tangentNormal = UnpackNormal(tex2D(_BumpMap, i.uv));
+            tangentNormal.xy *= _BumpScale;
+            tangentNormal.z = sqrt(1.0 - saturate(dot(tangentNormal.xy, tangentNormal.xy)));
+        
+            fixed3 albedo = tex2D(\_MainTex, i.uv).rgb * \_Color.rgb;
+                        
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz * albedo;
+                        
+            fixed3 diffuse = _LightColor0.rgb * albedo * max(0, dot(tangentNormal, tangentLightDir));
+                        
+            fixed3 halfDir = normalize(tangentLightDir + tangentViewDir);
+            // Get the mask value
+            fixed specularMask = tex2D(\_SpecularMask, i.uv).r * \_SpecularScale;
+            // Compute specular term with the specular mask
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(tangentNormal, halfDir)), _Gloss) * specularMask;
+                    
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
      
 

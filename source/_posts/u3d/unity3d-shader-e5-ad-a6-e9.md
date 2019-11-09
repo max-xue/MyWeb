@@ -47,224 +47,224 @@ tags:
 *   自发光c_emissive_：当给定一个方向时，一个表面本身会向该方向发射多少辐照量。通常在实时渲染中，不会照亮别的物体，计算时使用材质的自发光颜色： **c**_emissive_ = **m**_emissive                                               _
 *   高光反射**c**_specular_:当光线从光源照射到模型表面时，该表面会在完全镜面反射方向散射多少辐射量。反射方向公式： **r** = 2(**n**.**l**)**n**-**l** Phong模型高光反射计算公式： **c**_specular_ = (**c**_light_.**m**_specular_)pow(max(0,**v**.**r**),**m**_gloss_) 其中**m**gloss是材质的光泽度、反光度，用于控制亮点大小。**m**_specular_材质的高光反射颜色，clight光源颜色。**v**是视角方向。Blinn模型： **h** = (**v** +**l**)/|**v**+**l**| **c**_specular_ = (**c**_light_.**m**_specular_)pow(max(0,**n**.**h**),**m**_gloss_) 逐顶点光照实现：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	// Transform the vertex from object space to projection space
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	// Get ambient term
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	// Transform the normal from object space to world space
-    	fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
-    	// Get the light direction in world space
-    	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-    				
-    	// Compute diffuse term
-    	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
-    				
-    	// Get the reflect direction in world space
-    	fixed3 reflectDir = normalize(reflect(-worldLightDir, worldNormal));
-    	// Get the view direction in world space
-    	fixed3 viewDir = normalize(\_WorldSpaceCameraPos.xyz - mul(unity\_ObjectToWorld, v.vertex).xyz);
-    				
-    	// Compute specular term
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(saturate(dot(reflectDir, viewDir)), _Gloss);
-    				
-    	o.color = ambient + diffuse + specular;
-    							 	
-    	return o;
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            // Transform the vertex from object space to projection space
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            // Get ambient term
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            // Transform the normal from object space to world space
+            fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
+            // Get the light direction in world space
+            fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+                        
+            // Compute diffuse term
+            fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
+                        
+            // Get the reflect direction in world space
+            fixed3 reflectDir = normalize(reflect(-worldLightDir, worldNormal));
+            // Get the view direction in world space
+            fixed3 viewDir = normalize(\_WorldSpaceCameraPos.xyz - mul(unity\_ObjectToWorld, v.vertex).xyz);
+                        
+            // Compute specular term
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(saturate(dot(reflectDir, viewDir)), _Gloss);
+                        
+            o.color = ambient + diffuse + specular;
+                                        
+            return o;
+        }
     
     逐像素光照实现：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	// Transform the vertex from object space to projection space
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	// Transform the normal from object space to world space
-    	o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
-    	// Transform the vertex from object spacet to world space
-    	o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	// Get ambient term
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	fixed3 worldNormal = normalize(i.worldNormal);
-    	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-    				
-    	// Compute diffuse term
-    	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
-    				
-    	// Get the reflect direction in world space
-    	fixed3 reflectDir = normalize(reflect(-worldLightDir, worldNormal));
-    	// Get the view direction in world space
-    	fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
-    	// Compute specular term
-    	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(saturate(dot(reflectDir, viewDir)), _Gloss);
-    				
-    	return fixed4(ambient + diffuse + specular, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            // Transform the vertex from object space to projection space
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            // Transform the normal from object space to world space
+            o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
+            // Transform the vertex from object spacet to world space
+            o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            // Get ambient term
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            fixed3 worldNormal = normalize(i.worldNormal);
+            fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+                        
+            // Compute diffuse term
+            fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
+                        
+            // Get the reflect direction in world space
+            fixed3 reflectDir = normalize(reflect(-worldLightDir, worldNormal));
+            // Get the view direction in world space
+            fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
+            // Compute specular term
+            fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(saturate(dot(reflectDir, viewDir)), _Gloss);
+                        
+            return fixed4(ambient + diffuse + specular, 1.0);
+        }
     
 
 BlinnPhong：
-
-v2f vert(a2v v) {
-	v2f o;
-	// Transform the vertex from object space to projection space
-	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-				
-	// Transform the normal from object space to world space
-	o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
-				
-	// Transform the vertex from object spacet to world space
-	o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-				
-	return o;
-}
-			
-fixed4 frag(v2f i) : SV_Target {
-	// Get ambient term
-	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-				
-	fixed3 worldNormal = normalize(i.worldNormal);
-	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-				
-	// Compute diffuse term
-	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * max(0, dot(worldNormal, worldLightDir));
-				
-	// Get the view direction in world space
-	fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
-	// Get the half direction in world space
-	fixed3 halfDir = normalize(worldLightDir + viewDir);
-	// Compute specular term
-	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
-				
-	return fixed4(ambient + diffuse + specular, 1.0);
-}
+    
+    v2f vert(a2v v) {
+        v2f o;
+        // Transform the vertex from object space to projection space
+        o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                    
+        // Transform the normal from object space to world space
+        o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
+                    
+        // Transform the vertex from object spacet to world space
+        o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                    
+        return o;
+    }
+                
+    fixed4 frag(v2f i) : SV_Target {
+        // Get ambient term
+        fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                    
+        fixed3 worldNormal = normalize(i.worldNormal);
+        fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+                    
+        // Compute diffuse term
+        fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * max(0, dot(worldNormal, worldLightDir));
+                    
+        // Get the view direction in world space
+        fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
+        // Get the half direction in world space
+        fixed3 halfDir = normalize(worldLightDir + viewDir);
+        // Compute specular term
+        fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
+                    
+        return fixed4(ambient + diffuse + specular, 1.0);
+    }
 
 BlinnPhong Use Build In Functions：
-
-v2f vert(a2v v) {
-	v2f o;
-	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-				
-	// Use the build-in funtion to compute the normal in world space
-	o.worldNormal = UnityObjectToWorldNormal(v.normal);
-				
-	o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-				
-	return o;
-}
-			
-fixed4 frag(v2f i) : SV_Target {
-	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-				
-	fixed3 worldNormal = normalize(i.worldNormal);
-	//  Use the build-in funtion to compute the light direction in world space
-	// Remember to normalize the result
-	fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
-				
-	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * max(0, dot(worldNormal, worldLightDir));
-				
-	// Use the build-in funtion to compute the view direction in world space
-	// Remember to normalize the result
-	fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
-	fixed3 halfDir = normalize(worldLightDir + viewDir);
-	fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
-				
-	return fixed4(ambient + diffuse + specular, 1.0);
-}
-
- 
+    
+    v2f vert(a2v v) {
+        v2f o;
+        o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                    
+        // Use the build-in funtion to compute the normal in world space
+        o.worldNormal = UnityObjectToWorldNormal(v.normal);
+                    
+        o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+                    
+        return o;
+    }
+                
+    fixed4 frag(v2f i) : SV_Target {
+        fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                    
+        fixed3 worldNormal = normalize(i.worldNormal);
+        //  Use the build-in funtion to compute the light direction in world space
+        // Remember to normalize the result
+        fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(i.worldPos));
+                    
+        fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * max(0, dot(worldNormal, worldLightDir));
+                    
+        // Use the build-in funtion to compute the view direction in world space
+        // Remember to normalize the result
+        fixed3 viewDir = normalize(UnityWorldSpaceViewDir(i.worldPos));
+        fixed3 halfDir = normalize(worldLightDir + viewDir);
+        fixed3 specular = \_LightColor0.rgb * \_Specular.rgb * pow(max(0, dot(worldNormal, halfDir)), _Gloss);
+                    
+        return fixed4(ambient + diffuse + specular, 1.0);
+    }
+    
+     
 
 *   漫反射**c**_diffuse_:当光线从光源照射到模型表面时，该表面会向每个方向散射多少辐射量。符合**兰伯特定律**：反射光线的强度与表面法线和光源方向之间夹角的余弦值成正比，计算公式： **c**_diffuse_ = (**c**_light_ . **m**_diffuse_)max(0,**n**.**l**) **n**是表面法线，**l**是指向光源的单位矢量，**m**_diffuse_是材质的漫反射颜色，**c**_light_是光源颜色 逐顶点光照实现：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	// Transform the vertex from object space to projection space
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	// Get ambient term
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	// Transform the normal from object space to world space
-    	fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
-    	// Get the light direction in world space
-    	fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
-    	// Compute diffuse term
-    	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLight));
-    				
-    	o.color = ambient + diffuse;
-    				
-    	return o;
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            // Transform the vertex from object space to projection space
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            // Get ambient term
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            // Transform the normal from object space to world space
+            fixed3 worldNormal = normalize(mul(v.normal, (float3x3)unity_WorldToObject));
+            // Get the light direction in world space
+            fixed3 worldLight = normalize(_WorldSpaceLightPos0.xyz);
+            // Compute diffuse term
+            fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLight));
+                        
+            o.color = ambient + diffuse;
+                        
+            return o;
+        }
     
     逐像素光照实现：
     
-    v2f vert(a2v v) {
-    	v2f o;
-    	// Transform the vertex from object space to projection space
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    
-    	// Transform the normal from object space to world space
-    	o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
-    
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	// Get ambient term
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	// Get the normal in world space
-    	fixed3 worldNormal = normalize(i.worldNormal);
-    	// Get the light direction in world space
-    	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-    				
-    	// Compute diffuse term
-    	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
-    				
-    	fixed3 color = ambient + diffuse;
-    				
-    	return fixed4(color, 1.0);
-    }
-    
-    **半兰伯特定律： c**_diffuse_ **= (c**_light_**.m**_diffuse_**)(α(n.l) + β)** **α,β**通常为0.5 **c**_diffuse_ **= (c**_light_**.m**_diffuse_**)(0.5(n.l) + 0.5)** 把** n.l**结果从【-1，1】映射到【0，1】，该定律无物理依据，仅仅是一个视觉加强技术
-    
-    v2f vert(a2v v) {
-    	v2f o;
-    	// Transform the vertex from object space to projection space
-    	o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
-    				
-    	// Transform the normal from object space to world space
-    	o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
-    				
-    	return o;
-    }
-    			
-    fixed4 frag(v2f i) : SV_Target {
-    	// Get ambient term
-    	fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
-    				
-    	// Get the normal in world space
-    	fixed3 worldNormal = normalize(i.worldNormal);
-    	// Get the light direction in world space
-    	fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
-    				
-    	// Compute diffuse term
-    	fixed halfLambert = dot(worldNormal, worldLightDir) * 0.5 + 0.5;
-    	fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * halfLambert;
-    				
-    	fixed3 color = ambient + diffuse;
-    				
-    	return fixed4(color, 1.0);
-    }
+        v2f vert(a2v v) {
+            v2f o;
+            // Transform the vertex from object space to projection space
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+        
+            // Transform the normal from object space to world space
+            o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
+        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            // Get ambient term
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            // Get the normal in world space
+            fixed3 worldNormal = normalize(i.worldNormal);
+            // Get the light direction in world space
+            fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+                        
+            // Compute diffuse term
+            fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * saturate(dot(worldNormal, worldLightDir));
+                        
+            fixed3 color = ambient + diffuse;
+                        
+            return fixed4(color, 1.0);
+        }
+        
+        **半兰伯特定律： c**_diffuse_ **= (c**_light_**.m**_diffuse_**)(α(n.l) + β)** **α,β**通常为0.5 **c**_diffuse_ **= (c**_light_**.m**_diffuse_**)(0.5(n.l) + 0.5)** 把** n.l**结果从【-1，1】映射到【0，1】，该定律无物理依据，仅仅是一个视觉加强技术
+        
+        v2f vert(a2v v) {
+            v2f o;
+            // Transform the vertex from object space to projection space
+            o.pos = mul(UNITY\_MATRIX\_MVP, v.vertex);
+                        
+            // Transform the normal from object space to world space
+            o.worldNormal = mul(v.normal, (float3x3)unity_WorldToObject);
+                        
+            return o;
+        }
+                    
+        fixed4 frag(v2f i) : SV_Target {
+            // Get ambient term
+            fixed3 ambient = UNITY\_LIGHTMODEL\_AMBIENT.xyz;
+                        
+            // Get the normal in world space
+            fixed3 worldNormal = normalize(i.worldNormal);
+            // Get the light direction in world space
+            fixed3 worldLightDir = normalize(_WorldSpaceLightPos0.xyz);
+                        
+            // Compute diffuse term
+            fixed halfLambert = dot(worldNormal, worldLightDir) * 0.5 + 0.5;
+            fixed3 diffuse = \_LightColor0.rgb * \_Diffuse.rgb * halfLambert;
+                        
+            fixed3 color = ambient + diffuse;
+                        
+            return fixed4(color, 1.0);
+        }
     
      
 *   环境光**c**_ambient_:用于描述其他所有的间接光照。通常是一个全局变量： **c**_ambient_ = **g**_ambient_ 在unity中通过Windows->Lights->Ambient Source/Ambient Color/Ambient Intensity控制；在Shader中通过UNITY\_LIGHTMODEL\_AMBIENT获取颜色及强度

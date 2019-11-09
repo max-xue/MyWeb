@@ -8,27 +8,27 @@ date: 2016-11-25 18:22:51
 tags:
 ---
 
-**git init**
+    git init
 
 初始化一个版本库
 
-**git clone**
+    git clone
 
 签出一个版本库
 
-**git add**
+    git add
 
 添加资源到本地版本库
 
-**git commit**
+    git commit
 
 提交改动到本地版本库
 
-**git pull**
+    git pull
 
 从服务端拉取，如果有改动合并到本地。将服务端同步到本地
 
-**git push**
+    git push
 
 将本地修改推送到服务端，将本地同步到服务端
 
@@ -51,57 +51,67 @@ tags:
 ###### **签出指定分支**
 
 签出远程工程到本地目录
-git clone https://github.com/EpicGames/UnrealEngine.git
+
+    git clone https://github.com/EpicGames/UnrealEngine.git
+    
 列出所有分支
-git branch -a
+
+    git branch -a
+    
 签出远程 origin/4.13分支到本地4.13分支,并切换到这个分支
-git checkout -b 4.13 origin/4.13
+
+    git checkout -b 4.13 origin/4.13
+    
 切换到4.13分支
-git checkout 4.13
+
+    git checkout 4.13
 
 ###### 撤销指定提交
 
-//查看log
-git log
+    //查看log
+    git log
+    
+    //撤销到指定版本号
+    git reset --soft f8be079b545a66fe3cecff5af87b126d6e8c9874
 
-//撤销到指定版本号
-git reset --soft f8be079b545a66fe3cecff5af87b126d6e8c9874
-
-//强制提交到服务端
-git push origin winsdk --force
+    //强制提交到服务端
+    git push origin winsdk --force
 
 ###### 删除指定分支：
-
-#. update the references in our local machine 
-git fetch -p origin
-
-#.查看本地和远程分支
-git branch -a
-
-#. 先切换到其他分支
-git checkout master
-
-#.删除远程分支
-git push origin --delete dev_xue
-
-\# 删除后，再次查看分支情况
-git branch -a
-
-\# 删除本地分支
-git branch -d dev_xue
+    
+    #. update the references in our local machine 
+    git fetch -p origin
+    
+    #.查看本地和远程分支
+    git branch -a
+    
+    #. 先切换到其他分支
+    git checkout master
+    
+    #.删除远程分支
+    git push origin --delete dev_xue
+    
+    \# 删除后，再次查看分支情况
+    git branch -a
+    
+    \# 删除本地分支
+    git branch -d dev_xue
+    
+###### 关闭换行（解决meta文件频繁改支）：
+    git config --global core.autocrlf false
 
 问题：Please make sure you have the correct access rights
-
-//生成public key
-ssh-keygen -t rsa -C "xue\_huashan@163.com",//xue\_huashan@163.com是你git操作的账号。
-
-Generating public/private rsa key pair.
-Enter file in which to save the key (/c/Users/xuegang-pc/.ssh/id_rsa): //回车
-Enter passphrase (empty for no passphrase): //回车
-Enter same passphrase again: //回车
-Your identification has been saved in /c/Users/xuegang-pc/.ssh
-
-//显示内容
-cat /c/Users/xuegang-pc/.ssh/id_rsa.pub
-
-//将内容复制到Web帐户中的SSH Keys
+    
+    //生成public key
+    ssh-keygen -t rsa -C "xue\_huashan@163.com",//xue\_huashan@163.com是你git操作的账号。
+    
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/c/Users/xuegang-pc/.ssh/id_rsa): //回车
+    Enter passphrase (empty for no passphrase): //回车
+    Enter same passphrase again: //回车
+    Your identification has been saved in /c/Users/xuegang-pc/.ssh
+    
+    //显示内容
+    cat /c/Users/xuegang-pc/.ssh/id_rsa.pub
+    
+    //将内容复制到Web帐户中的SSH Keys
